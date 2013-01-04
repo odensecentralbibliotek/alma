@@ -16,7 +16,7 @@ function alma_user_authenticate($uid, $pass) {
     $return['success'] = TRUE;
   }
   catch (Exception $e) {
-    return $return;
+    throw new DingProviderAuthException('Unauthenticated User');
   }
 
   // @todo Check block status.
