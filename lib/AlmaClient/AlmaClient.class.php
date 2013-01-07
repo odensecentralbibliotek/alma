@@ -659,7 +659,6 @@ class AlmaClient {
       'request_status' => $doc->getElementsByTagName('status')->item(0)->getAttribute('value'),
       'records' => array(),
     );
-
     foreach ($doc->getElementsByTagName('detailCatalogueRecord') as $elem) {
       $record = AlmaClient::process_catalogue_record_details($elem);
       $data['records'][$record['alma_id']] = $record;
@@ -780,6 +779,7 @@ class AlmaClient {
       );
     }
 
+    
     return $holdings;
   }
 
