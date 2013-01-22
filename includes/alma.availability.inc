@@ -40,7 +40,8 @@ function alma_availability_holdings($provider_ids) {
       
       $result[$alma_id] = $holding;
       
-      $result[$alma_id]['html'] = _alma_get_holdings($details, $holding['is_periodical']);
+      $parameter['records'] = array($alma_id => $record);
+      $result[$alma_id]['html'] = _alma_get_holdings($parameter, $holding['is_periodical']);
     }
   }
   return $result;
