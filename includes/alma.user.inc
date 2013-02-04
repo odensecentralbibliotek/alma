@@ -68,7 +68,12 @@ function alma_user_profile_form_validate($form, $form_state) {
 }
 
 
-function alma_user_clear_cache($creds=NULL) {
+/**
+ * Clear user cache.
+ */
+function alma_user_clear_cache($user = NULL) {
+  $creds = ding_user_get_creds($account);
+  // Update user status cache.
   alma_get_patron($creds, TRUE);
 }
 
