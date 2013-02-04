@@ -119,9 +119,10 @@ function alma_reservation_list($account) {
  /**
  * Create a reservation for a given account.
  */
-function alma_reservation_create($account, $id, $branch, $expiry = NULL) {
+function alma_reservation_create($account, $id, $options) {
   $creds = ding_user_get_creds($account);
-
+$branch = $options['alma_preferred_branch'];
+$expiry = $options['expiry'];
   // Check if the users has this reservation and throw exception.
   if (alma_reservation_exists($account, $id)) {
     throw new DingProviderReservationExists();
