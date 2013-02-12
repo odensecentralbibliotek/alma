@@ -531,7 +531,7 @@ function alma_update_provider( $changes, $profile2 ) {
     else {
       // Update mobile.
       try {
-        $res = alma_client_invoke('change_phone_number', $creds['name'], $creds['pass'], $changes['phone_id'], $changes['mobile']);
+        $res = alma_client_invoke('change_phone_number', $creds['name'], $creds['pass'], $changes['phone_id'], $changes['mobile'], TRUE);
       }
       catch (Exception $e) {
         watchdog('Alma provider', $e->getMessage(), array(), WATCHDOG_ERROR);
@@ -546,7 +546,7 @@ function alma_update_provider( $changes, $profile2 ) {
   elseif (isset($changes['mobile'])) {
     // Add mobile.
     try {
-      $res = alma_client_invoke('add_phone_number', $creds['name'], $creds['pass'], $changes['mobile'] );
+      $res = alma_client_invoke('add_phone_number', $creds['name'], $creds['pass'], $changes['mobile'], TRUE);
     }
     catch (Exception $e) {
       watchdog('Alma provider', $e->getMessage(), array(), WATCHDOG_ERROR);
