@@ -91,18 +91,20 @@ function _alma_availability_branch_holding(&$branch_holding, &$holding, &$total,
   $total_reservable += $reservable_count;
 
   $org = alma_get_organisation();
-  foreach (alma_availability_holding_parts() as $part) {
+  $holding_parts = variable_get('alma_availability', alma_availability_holding_parts());
+  foreach ($holding_parts as $part) {
     if (!empty($branch_holding[$part . '_id'])) {
       $parts[] = $org[$part][$branch_holding[$part . '_id']];
     }
   }
 
-  if (!empty($branch_holding['shelf_mark'])) {
+  if (isset($holding_parts['shelf_mark']) && !empty($branch_holding['shelf_mark'])) {
     // Shelf mark might have leading >, strip any and replace the rest
     // with the proper arrow.
     $parts[] = strtr(trim($branch_holding['shelf_mark'], " >\n\t"), array('>' => '→'));
   }
 
+  // Remove any empty strings in parts
   $parts = array_filter($parts);
 
   if ($parts && $branch_holding['total_count'] > $branch_holding['checked_out_count']) {
