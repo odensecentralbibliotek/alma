@@ -675,7 +675,7 @@ class AlmaClient {
     $record = array(
       'alma_id' => $elem->getAttribute('id'),
       'target_audience' => $elem->getAttribute('targetAudience'),
-      'show_reservation_button' => ($elem->getAttribute('showReservationButton') == 'yes') ? TRUE : FALSE,
+      'reservable' => FALSE,
       'reservation_count' => $elem->getAttribute('nofReservations'),
       'loan_count_year' => $elem->getAttribute('nofLoansYear'),
       'loan_count_total' => $elem->getAttribute('nofLoansTotal'),
@@ -715,6 +715,15 @@ class AlmaClient {
     }
 
     if ($record['media_class'] != 'periodical') {
+      // If any of the holdings are reservable then show the reservation button.
+      if ($elem->getAttribute('showReservationButton') == 'yes') {
+        foreach ($elem->getElementsByTagName('holding') as $holding) {
+          if ((int) $holding->getAttribute('nofTotal') - (int) $holding->getAttribute('nofReference') > 0) {
+            $record['reservable'] = TRUE;
+            break;
+          }
+        }
+      }
       $record['holdings'] = AlmaClient::process_catalogue_record_holdings($elem);
     }
     // Periodicals are nested holdings, which we want to keep that way.
@@ -726,24 +735,19 @@ class AlmaClient {
             $issue = $issue_holdings->getAttribute('value');
             $holdings = AlmaClient::process_catalogue_record_holdings($issue_holdings);
             $record['holdings'][$year][$issue] = $holdings;
-            $issue_list = array(
-              'available_count' => 0,
-              'branches' => array(),
-              'reservable' => $holdings[0]['reservable'],
-            );
-
-            // Also create an array with the totals for each issue.
-            foreach ($holdings as $holding) {
-              if ($holding['available_count'] > 0) {
-                $issue_list['available_count'] += (int) $holding['available_count'];
-                if (isset($issue_list['branches'][$holding['branch_id']])) {
-                  $issue_list['branches'][$holding['branch_id']] += (int) $holding['available_count'];
-                }
-                else {
-                  $issue_list['branches'][$holding['branch_id']] = (int) $holding['available_count'];
-                }
+            // If any of the issues holdings are reservable then show the reservation button.
+            $show_reservation_button = FALSE;
+            foreach ($issue_holdings->getElementsByTagName('holding') as $issue_holding) {
+              if (($issue_holding->getAttribute('showReservationButton') == 'yes') &&
+                  ((int) $issue_holding->getAttribute('nofTotal') - (int) $issue_holding->getAttribute('nofReference') > 0)) {
+                $show_reservation_button = TRUE;
+                break;
               }
             }
+            $issue_list = array(
+              'local_id' => $holdings[0]['local_id'],
+              'reservable' => $show_reservation_button,
+            );
 
             $record['issues'][$year][$issue] = $issue_list;
           }
@@ -762,7 +766,7 @@ class AlmaClient {
 
     foreach ($elem->getElementsByTagName('holding') as $item) {
       $holdings[] = array(
-        'reservable' => $item->getAttribute('reservable'),
+        'local_id' => $item->getAttribute('reservable'),
         'status' => $item->getAttribute('status'),
         'ordered_count' => (int) $item->getAttribute('nofOrdered'),
         'checked_out_count' => (int) $item->getAttribute('nofCheckedOut'),

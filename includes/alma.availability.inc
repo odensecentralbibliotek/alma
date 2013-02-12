@@ -28,8 +28,7 @@ function alma_availability_holdings($provider_ids) {
       $holding = array(
         'local_id' => $alma_id,
         'available' => ($record['available_count'] > 0),
-        'reservable' => $record['show_reservation_button'],
-        'show_reservation_button' => $record['show_reservation_button'],
+        'reservable' => $record['reservable'],
         'reserved_count' => (int) $record['reservation_count'],
         'deferred_period' => FALSE,
         'is_periodical' => ($record['media_class'] == 'periodical'),
@@ -42,17 +41,7 @@ function alma_availability_holdings($provider_ids) {
         $holding['holdings'] = array();
         foreach ($record['holdings'] as $volume => $issues) {
           foreach ($issues as $issue_no => $holds) {
-            $issue = array();
-            $issue['branches'] = array();
-            $issue['local_id'] = $branch_holding['reservable'];
-            $issue['reservable'] = (($branch_holding['status'] == 'availableForLoan') && ((int)$branch_holding['total_count'] - (int)$branch_holding['reference_count']));
-            $issues_array[$volume][$issue_no] = $issue;
-
             foreach ($holds as $key => $branch_holding) {
-              if (!in_array($branch_holding['branch_id'], $issue['branches'])) {
-                $issue['branches'][] = $branch_holding['branch_id'];
-              }
-
               _alma_availability_branch_holding($branch_holding, $holding, $total, $total_reservable);
             }
           }
@@ -61,7 +50,7 @@ function alma_availability_holdings($provider_ids) {
         if (is_array($holding['holdings'])) {
           asort($holding['holdings']);
         }
-        $holding['issues'] = $issues_array;
+        $holding['issues'] = $record['issues'];
       } // END periodicals
       else {
         foreach ($record['holdings'] as $branch_holding) {
