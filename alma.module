@@ -645,13 +645,21 @@ function alma_get_patron($creds = NULL, $reset = FALSE, $as_array = FALSE) {
   if (!$patron || $reset) {
     $info = alma_client_invoke('get_patron_info', $creds['name'], $creds['pass'], TRUE);
     $organisation = alma_get_organisation();
+    $mobiles = array();
+    if (isset($info['phones'])) {
+      foreach ($info['phones'] as $phone) {
+        if ($phone['sms'] === TRUE) {
+          $mobiles[] = $phone;
+        }
+      }
+    }
     $patron = array(
       'name' => $info['user_name'],
       'email' => isset($info['mails'][0]) ? $info['mails'][0]['mail'] : '',
       'address' => isset($info['addresses'][0]) ? $info['addresses'][0]['street'] : '',
       'postal' => isset($info['addresses'][0]) ? $info['addresses'][0]['postal_code'] : '',
       'city' => isset($info['addresses'][0]) ? $info['addresses'][0]['city'] : '',
-      'mobiles' => isset($info['phones']) ? $info['phones'] : '',
+      'mobiles' => $mobiles,
       'branch' => $info['preferences']['patron_branch'],
       'branchName' => $organisation['branch'][$info['preferences']['patron_branch']],
       'absentPeriods' => isset($info['absent_periods']) ? $info['absent_periods'] : '',
