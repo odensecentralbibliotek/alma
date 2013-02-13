@@ -91,7 +91,7 @@ function _alma_availability_branch_holding(&$branch_holding, &$holding, &$total,
   $total_reservable += $reservable_count;
 
   $org = alma_get_organisation();
-  $holding_parts = variable_get('alma_availability', alma_availability_holding_parts());
+  $holding_parts = variable_get('alma_availability_holding_parts', alma_availability_holding_parts());
   foreach ($holding_parts as $part) {
     if (!empty($branch_holding[$part . '_id'])) {
       $parts[] = $org[$part][$branch_holding[$part . '_id']];

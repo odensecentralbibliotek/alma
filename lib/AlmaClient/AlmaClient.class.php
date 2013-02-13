@@ -672,6 +672,8 @@ class AlmaClient {
    * Helper function for processing the catalogue records.
    */
   private static function process_catalogue_record_details($elem) {
+    $nonreservable_collections = variable_get('alma_availability_nonreservable_collections', '');
+
     $record = array(
       'alma_id' => $elem->getAttribute('id'),
       'target_audience' => $elem->getAttribute('targetAudience'),
@@ -718,7 +720,8 @@ class AlmaClient {
       // If any of the holdings are reservable then show the reservation button.
       if ($elem->getAttribute('showReservationButton') == 'yes') {
         foreach ($elem->getElementsByTagName('holding') as $holding) {
-          if ((int) $holding->getAttribute('nofTotal') - (int) $holding->getAttribute('nofReference') > 0) {
+          if (((int) $holding->getAttribute('nofTotal') - (int) $holding->getAttribute('nofReference') > 0) &&
+              (!array_key_exists($holding->getAttribute('collectionId'), $nonreservable_collections))) {
             $record['reservable'] = TRUE;
             break;
           }
@@ -739,7 +742,8 @@ class AlmaClient {
             $show_reservation_button = FALSE;
             foreach ($issue_holdings->getElementsByTagName('holding') as $issue_holding) {
               if (($issue_holding->getAttribute('showReservationButton') == 'yes') &&
-                  ((int) $issue_holding->getAttribute('nofTotal') - (int) $issue_holding->getAttribute('nofReference') > 0)) {
+                  ((int) $issue_holding->getAttribute('nofTotal') - (int) $issue_holding->getAttribute('nofReference') > 0) &&
+                  (!array_key_exists($issue_holding->getAttribute('collectionId'), $nonreservable_collections))) {
                 $show_reservation_button = TRUE;
                 break;
               }
