@@ -38,19 +38,19 @@ function alma_availability_holdings($provider_ids) {
 
       // START periodicals
       if ($holding['is_periodical']) {
-        $holding['holdings'] = array();
+        $holding['issues'] = $record['issues'];
         foreach ($record['holdings'] as $volume => $issues) {
           foreach ($issues as $issue_no => $holds) {
+            $issue_holding['holdings'] = array();
+            $issue_reservable = 0;
             foreach ($holds as $key => $branch_holding) {
-              _alma_availability_branch_holding($branch_holding, $holding, $total, $total_reservable);
+              _alma_availability_branch_holding($branch_holding, $issue_holding, $total, $issue_reservable);
             }
+            $issue_holding['reservable_count'] = $issue_reservable;
+            $holding['issues'][$volume][$issue_no] = array_merge($holding['issues'][$volume][$issue_no], $issue_holding);
+            $total_reservable += $issue_reservable;
           }
         }
-
-        if (is_array($holding['holdings'])) {
-          asort($holding['holdings']);
-        }
-        $holding['issues'] = $record['issues'];
       } // END periodicals
       else {
         foreach ($record['holdings'] as $branch_holding) {
@@ -99,18 +99,19 @@ function _alma_availability_branch_holding(&$branch_holding, &$holding, &$total,
   }
 
   if (isset($holding_parts['shelf_mark']) && !empty($branch_holding['shelf_mark'])) {
-    // Shelf mark might have leading >, strip any and replace the rest
-    // with the proper arrow.
-    $parts[] = strtr(trim($branch_holding['shelf_mark'], " >\n\t"), array('>' => '→'));
+    // Shelf mark might have leading >. Trimming will make them empty strings,
+    // which will be removed by array_filter.
+    $parts = array_merge($parts, array_map("trim", explode(">", $branch_holding['shelf_mark'])));
   }
 
   // Remove any empty strings in parts
   $parts = array_filter($parts);
 
-  if ($parts && $branch_holding['total_count'] > $branch_holding['checked_out_count']) {
-    $branch_string = join(' → ', $parts);
-    if (!in_array($branch_string, $holding['holdings'])) {
-      $holding['holdings'][] = $branch_string;
-    }
+  if ($parts) {
+    $holding['holdings'][] = array(
+      'location' => $parts,
+      'total_count' => $branch_holding['total_count'],
+      'available_count' => $branch_holding['available_count'],
+    );
   }
 }
