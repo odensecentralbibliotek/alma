@@ -18,7 +18,7 @@ function alma_availability_holding_parts() {
 /**
  * Implements provider availability, holdings.
  */
-function alma_availability_holdings($provider_ids) {
+function alma_availability_holdings($provider_ids, $only_available = TRUE) {
   $ids = join(',', $provider_ids);
 
   $details = alma_client_invoke('catalogue_record_detail', $ids);
@@ -44,7 +44,7 @@ function alma_availability_holdings($provider_ids) {
             $issue_holding['holdings'] = array();
             $issue_reservable = 0;
             foreach ($holds as $key => $branch_holding) {
-              _alma_availability_branch_holding($branch_holding, $issue_holding, $total, $issue_reservable);
+              _alma_availability_branch_holding($branch_holding, $issue_holding, $total, $issue_reservable, $only_available);
             }
             $issue_holding['reservable_count'] = $issue_reservable;
             $holding['issues'][$volume][$issue_no] = array_merge($holding['issues'][$volume][$issue_no], $issue_holding);
@@ -54,7 +54,7 @@ function alma_availability_holdings($provider_ids) {
       } // END periodicals
       else {
         foreach ($record['holdings'] as $branch_holding) {
-          _alma_availability_branch_holding($branch_holding, $holding, $total, $total_reservable);
+          _alma_availability_branch_holding($branch_holding, $holding, $total, $total_reservable, $only_available);
         }
       }
 
@@ -75,9 +75,10 @@ function alma_availability_holdings($provider_ids) {
  * @param type $holding Output holding info
  * @param type $total Output total amount
  * @param type $total_reservable Output total reservable amount
+ * @param bool $only_available Only add to $holding if available_count > 0.
  * @return type NULL
  */
-function _alma_availability_branch_holding(&$branch_holding, &$holding, &$total, &$total_reservable) {
+function _alma_availability_branch_holding(&$branch_holding, &$holding, &$total, &$total_reservable, $only_available) {
   if (in_array($branch_holding['collection_id'], array('karens', 'karens-'))) {
     $holding['deferred_period'] = TRUE;
   }
@@ -89,6 +90,10 @@ function _alma_availability_branch_holding(&$branch_holding, &$holding, &$total,
   // loaned).
   $reservable_count = (int) $branch_holding['total_count'] - (int) $branch_holding['reference_count'];
   $total_reservable += $reservable_count;
+
+  if ($only_available && $branch_holding['available_count'] == 0) {
+    return;
+  }
 
   $org = alma_get_organisation();
   $holding_parts = variable_get('alma_availability_holding_parts', alma_availability_holding_parts());
