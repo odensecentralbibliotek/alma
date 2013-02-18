@@ -717,14 +717,15 @@ class AlmaClient {
     }
 
     if ($record['media_class'] != 'periodical') {
-      // If any of the holdings are reservable then show the reservation button.
       if ($elem->getAttribute('showReservationButton') == 'yes') {
+        $record['reservable_count'] = 0;
         foreach ($elem->getElementsByTagName('holding') as $holding) {
-          if (((int) $holding->getAttribute('nofTotal') - (int) $holding->getAttribute('nofReference') > 0) &&
-              (!array_key_exists($holding->getAttribute('collectionId'), $nonreservable_collections))) {
-            $record['reservable'] = TRUE;
-            break;
+          if (!array_key_exists($holding->getAttribute('collectionId'), $nonreservable_collections)) {
+            $record['reservable_count'] += (int) $holding->getAttribute('nofTotal') - (int) $holding->getAttribute('nofReference');
           }
+        }
+        if ($record['reservable_count'] > 0) {
+          $record['reservable'] = TRUE;
         }
       }
       $record['holdings'] = AlmaClient::process_catalogue_record_holdings($elem);
@@ -738,19 +739,17 @@ class AlmaClient {
             $issue = $issue_holdings->getAttribute('value');
             $holdings = AlmaClient::process_catalogue_record_holdings($issue_holdings);
             $record['holdings'][$year][$issue] = $holdings;
-            // If any of the issues holdings are reservable then show the reservation button.
-            $show_reservation_button = FALSE;
+            $reservable_count = 0;
             foreach ($issue_holdings->getElementsByTagName('holding') as $issue_holding) {
               if (($issue_holding->getAttribute('showReservationButton') == 'yes') &&
-                  ((int) $issue_holding->getAttribute('nofTotal') - (int) $issue_holding->getAttribute('nofReference') > 0) &&
                   (!array_key_exists($issue_holding->getAttribute('collectionId'), $nonreservable_collections))) {
-                $show_reservation_button = TRUE;
-                break;
+                $reservable_count += (int) $issue_holding->getAttribute('nofTotal') - (int) $issue_holding->getAttribute('nofReference');
               }
             }
             $issue_list = array(
               'local_id' => $holdings[0]['local_id'],
-              'reservable' => $show_reservation_button,
+              'reservable_count' => $reservable_count,
+              'reservable' => ($reservable_count > 0),
             );
 
             $record['issues'][$year][$issue] = $issue_list;

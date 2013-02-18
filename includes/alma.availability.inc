@@ -42,20 +42,19 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
         foreach ($record['holdings'] as $volume => $issues) {
           foreach ($issues as $issue_no => $holds) {
             $issue_holding['holdings'] = array();
-            $issue_reservable = 0;
             foreach ($holds as $key => $branch_holding) {
-              _alma_availability_branch_holding($branch_holding, $issue_holding, $total, $issue_reservable, $only_available);
+              _alma_availability_branch_holding($branch_holding, $issue_holding, $total, $only_available);
             }
-            $issue_holding['reservable_count'] = $issue_reservable;
             $holding['issues'][$volume][$issue_no] = array_merge($holding['issues'][$volume][$issue_no], $issue_holding);
-            $total_reservable += $issue_reservable;
+            $total_reservable += $holding['issues'][$volume][$issue_no]['reservable_count'];
           }
         }
       } // END periodicals
       else {
         foreach ($record['holdings'] as $branch_holding) {
-          _alma_availability_branch_holding($branch_holding, $holding, $total, $total_reservable, $only_available);
+          _alma_availability_branch_holding($branch_holding, $holding, $total, $only_available);
         }
+        $total_reservable = $record['reservable_count'];
       }
 
       $holding['reservable_count'] = $total_reservable;
@@ -78,18 +77,13 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
  * @param bool $only_available Only add to $holding if available_count > 0.
  * @return type NULL
  */
-function _alma_availability_branch_holding(&$branch_holding, &$holding, &$total, &$total_reservable, $only_available) {
+function _alma_availability_branch_holding(&$branch_holding, &$holding, &$total, $only_available) {
   if (in_array($branch_holding['collection_id'], array('karens', 'karens-'))) {
     $holding['deferred_period'] = TRUE;
   }
 
   $parts = array();
   $total += (int) $branch_holding['total_count'];
-
-  // Reservable is total items minus reference (which cannot be
-  // loaned).
-  $reservable_count = (int) $branch_holding['total_count'] - (int) $branch_holding['reference_count'];
-  $total_reservable += $reservable_count;
 
   if ($only_available && $branch_holding['available_count'] == 0) {
     return;
