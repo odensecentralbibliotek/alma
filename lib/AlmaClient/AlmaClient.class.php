@@ -717,16 +717,16 @@ class AlmaClient {
     }
 
     if ($record['media_class'] != 'periodical') {
-      if ($elem->getAttribute('showReservationButton') == 'yes') {
-        $record['reservable_count'] = 0;
-        foreach ($elem->getElementsByTagName('holding') as $holding) {
-          if (!array_key_exists($holding->getAttribute('collectionId'), $nonreservable_collections)) {
-            $record['reservable_count'] += (int) $holding->getAttribute('nofTotal') - (int) $holding->getAttribute('nofReference');
-          }
+      $record['reservable_count'] = 0;
+      foreach ($elem->getElementsByTagName('holding') as $holding) {
+        $record['total_count'] += (int) $holding->getAttribute('nofTotal');
+        if (($elem->getAttribute('showReservationButton') == 'yes') &&
+            !array_key_exists($holding->getAttribute('collectionId'), $nonreservable_collections)) {
+          $record['reservable_count'] += (int) $holding->getAttribute('nofTotal') - (int) $holding->getAttribute('nofReference');
         }
-        if ($record['reservable_count'] > 0) {
-          $record['reservable'] = TRUE;
-        }
+      }
+      if ($record['reservable_count'] > 0) {
+        $record['reservable'] = TRUE;
       }
       $record['holdings'] = AlmaClient::process_catalogue_record_holdings($elem);
     }
@@ -740,7 +740,9 @@ class AlmaClient {
             $holdings = AlmaClient::process_catalogue_record_holdings($issue_holdings);
             $record['holdings'][$year][$issue] = $holdings;
             $reservable_count = 0;
+            $total_count = 0;
             foreach ($issue_holdings->getElementsByTagName('holding') as $issue_holding) {
+              $total_count += (int) $issue_holding->getAttribute('nofTotal');
               if (($issue_holding->getAttribute('showReservationButton') == 'yes') &&
                   (!array_key_exists($issue_holding->getAttribute('collectionId'), $nonreservable_collections))) {
                 $reservable_count += (int) $issue_holding->getAttribute('nofTotal') - (int) $issue_holding->getAttribute('nofReference');
@@ -749,6 +751,7 @@ class AlmaClient {
             $issue_list = array(
               'local_id' => $holdings[0]['local_id'],
               'reservable_count' => $reservable_count,
+              'total_count' => $total_count,
               'reservable' => ($reservable_count > 0),
             );
 

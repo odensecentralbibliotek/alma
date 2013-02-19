@@ -43,18 +43,20 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
           foreach ($issues as $issue_no => $holds) {
             $issue_holding['holdings'] = array();
             foreach ($holds as $key => $branch_holding) {
-              _alma_availability_branch_holding($branch_holding, $issue_holding, $total, $only_available);
+              _alma_availability_branch_holding($branch_holding, $issue_holding, $only_available);
             }
             $holding['issues'][$volume][$issue_no] = array_merge($holding['issues'][$volume][$issue_no], $issue_holding);
             $total_reservable += $holding['issues'][$volume][$issue_no]['reservable_count'];
+            $total += $holding['issues'][$volume][$issue_no]['total_count'];
           }
         }
       } // END periodicals
       else {
         foreach ($record['holdings'] as $branch_holding) {
-          _alma_availability_branch_holding($branch_holding, $holding, $total, $only_available);
+          _alma_availability_branch_holding($branch_holding, $holding, $only_available);
         }
         $total_reservable = $record['reservable_count'];
+        $total = $record['total_count'];
       }
 
       $holding['reservable_count'] = $total_reservable;
@@ -72,18 +74,15 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
  *
  * @param type $branch_holding Input Alma client holding info, will not be modified.
  * @param type $holding Output holding info
- * @param type $total Output total amount
- * @param type $total_reservable Output total reservable amount
  * @param bool $only_available Only add to $holding if available_count > 0.
  * @return type NULL
  */
-function _alma_availability_branch_holding(&$branch_holding, &$holding, &$total, $only_available) {
+function _alma_availability_branch_holding(&$branch_holding, &$holding, $only_available) {
   if (in_array($branch_holding['collection_id'], array('karens', 'karens-'))) {
     $holding['deferred_period'] = TRUE;
   }
 
   $parts = array();
-  $total += (int) $branch_holding['total_count'];
 
   if ($only_available && $branch_holding['available_count'] == 0) {
     return;
