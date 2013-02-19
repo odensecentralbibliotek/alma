@@ -104,7 +104,8 @@ function _alma_availability_branch_holding(&$branch_holding, &$holding, &$total,
   }
 
   // Remove any empty strings in parts
-  $parts = array_filter($parts);
+  // Remove the keys to make sure it translates to an array in javascript
+  $parts = array_values(array_filter($parts));
 
   if ($parts) {
     $holding['holdings'][] = array(
