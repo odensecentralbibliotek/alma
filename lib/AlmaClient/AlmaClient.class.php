@@ -732,15 +732,25 @@ class AlmaClient {
     }
     // Periodicals are nested holdings, which we want to keep that way.
     else {
+      $record['holdings'] = array();
       foreach ($elem->getElementsByTagName('compositeHoldings') as $holdings) {
         foreach ($holdings->childNodes as $year_holdings) {
           $year = $year_holdings->getAttribute('value');
+          $record['holdings'][$year] = array();
           foreach ($year_holdings->childNodes as $issue_holdings) {
             $issue = $issue_holdings->getAttribute('value');
             $holdings = AlmaClient::process_catalogue_record_holdings($issue_holdings);
-            $record['holdings'][$year][$issue] = $holdings;
-            $reservable_count = 0;
-            $total_count = 0;
+            // Issues sometimes comes more than once (one for those undervejs and and one for placering)
+            if (!isset($record['holdings'][$year][$issue])) {
+              $record['holdings'][$year][$issue] = $holdings;
+              $reservable_count = 0;
+              $total_count = 0;
+            }
+            else {
+              $record['holdings'][$year][$issue] = array_merge($record['holdings'][$year][$issue], $holdings);
+              $reservable_count = $record['issues'][$year][$issue]['reservable_count'];
+              $total_count = $record['issues'][$year][$issue]['total_count'];
+            }
             foreach ($issue_holdings->getElementsByTagName('holding') as $issue_holding) {
               $total_count += (int) $issue_holding->getAttribute('nofTotal');
               if (($issue_holding->getAttribute('showReservationButton') == 'yes') &&
