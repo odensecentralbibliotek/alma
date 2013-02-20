@@ -718,6 +718,7 @@ class AlmaClient {
 
     if ($record['media_class'] != 'periodical') {
       $record['reservable_count'] = 0;
+      $record['total_count'] = 0;
       foreach ($elem->getElementsByTagName('holding') as $holding) {
         $record['total_count'] += (int) $holding->getAttribute('nofTotal');
         if (($elem->getAttribute('showReservationButton') == 'yes') &&
