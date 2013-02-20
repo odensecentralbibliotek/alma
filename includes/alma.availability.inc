@@ -1,4 +1,19 @@
 <?php
+/**
+ * @file
+ * Ding_availability implementation for the Alma ding_provider.
+ */
+
+/**
+ * Get the holding parts defined for Alma.
+ */
+function alma_availability_holding_parts() {
+  static $holding_parts;
+  if (!isset($holding_parts)) {
+    $holding_parts = array('branch', 'department', 'location', 'sublocation', 'collection', 'shelf_mark');
+  }
+  return $holding_parts;
+}
 
 /**
  * Implements provider availability, items.
@@ -15,12 +30,10 @@ function alma_availability_items($provider_ids) {
 /**
  * Implements provider availability, holdings.
  */
-function alma_availability_holdings($provider_ids) {
+function alma_availability_holdings($provider_ids, $only_available = TRUE) {
   $ids = join(',', $provider_ids);
 
-  $holding_parts = array('branch', 'department', 'location', 'sublocation', 'collection');
   $details = alma_client_invoke('catalogue_record_detail', $ids);
-  $org = alma_get_organisation();
   $result = array();
   if ($details && isset($details['records'])) {
     foreach ($details['records'] as $alma_id => $record) {
@@ -28,8 +41,7 @@ function alma_availability_holdings($provider_ids) {
         'local_id' => $alma_id,
         'title' => $record['titles'][0],
         'available' => ($record['available_count'] > 0),
-        'reservable' => $record['show_reservation_button'],
-        'show_reservation_button' => $record['show_reservation_button'],
+        'reservable' => $record['reservable'],
         'reserved_count' => (int) $record['reservation_count'],
         'deferred_period' => FALSE,
         'is_periodical' => ($record['media_class'] == 'periodical'),
@@ -40,95 +52,25 @@ function alma_availability_holdings($provider_ids) {
 
       // START periodicals
       if ($holding['is_periodical']) {
-        $parts = array();
-        $holding['holdings'] = array();
+        $holding['issues'] = $record['issues'];
         foreach ($record['holdings'] as $volume => $issues) {
           foreach ($issues as $issue_no => $holds) {
-            $issue = array();
-            $issue['branches'] = array();
+            $issue_holding['holdings'] = array();
             foreach ($holds as $key => $branch_holding) {
-              if (!in_array($branch_holding['branch_id'], $issue['branches'])) {
-                $issue['branches'][] = $branch_holding['branch_id'];
-              }
-
-              $issue['local_id'] = $branch_holding['reservable'];
-              $issue['reservable'] = (($branch_holding['status'] == 'availableForLoan') && ((int)$branch_holding['total_count'] - (int)$branch_holding['reference_count']));
-              $issues_array[$volume][$issue_no] = $issue;
-
-              if (in_array($branch_holding['collection_id'], array('karens', 'karens-'))) {
-                $holding['deferred_period'] = TRUE;
-              }
-
-              $parts = array();
-              $total += (int) $branch_holding['total_count'];
-              // Reservable is total items minus reference (which cannot be
-              // loaned).
-              $reservable = (int) $branch_holding['total_count'] - (int) $branch_holding['reference_count'];
-              $total_reservable += $reservable;
-
-              foreach ($holding_parts as $part) {
-                if (!empty($branch_holding[$part . '_id'])) {
-                  $parts[] = $org[$part][$branch_holding[$part . '_id']];
-                }
-              }
-
-              if (!empty($branch_holding['shelf_mark'])) {
-                // Shelf mark might have leading >, strip any and replace the rest
-                // with the proper arrow.
-                $parts[] = strtr(trim($branch_holding['shelf_mark'], " >\n\t"), array('>' => '→'));
-              }
-
-              $parts = array_filter($parts);
-
-              if ($parts && $branch_holding['total_count'] > $branch_holding['checked_out_count']) {
-                $branch_string = join(' → ', $parts);
-                $holding['holdings_available'][] = $branch_string;
-
-                if (!in_array($branch_string, $holding['holdings'])) {
-                  $holding['holdings'][] = $branch_string;
-                }
-              }
+              _alma_availability_branch_holding($branch_holding, $issue_holding, $only_available);
             }
+            $holding['issues'][$volume][$issue_no] = array_merge($holding['issues'][$volume][$issue_no], $issue_holding);
+            $total_reservable += $holding['issues'][$volume][$issue_no]['reservable_count'];
+            $total += $holding['issues'][$volume][$issue_no]['total_count'];
           }
         }
-
-        if (is_array($holding['holdings'])) {
-          asort($holding['holdings']);
-        }
-        $holding['issues'] = $issues_array;
       } // END periodicals
       else {
         foreach ($record['holdings'] as $branch_holding) {
-          if (in_array($branch_holding['collection_id'], array('karens', 'karens-'))) {
-            $holding['deferred_period'] = TRUE;
-          }
-
-          $parts = array();
-          $total += (int)$branch_holding['total_count'];
-
-          // Reservable is total items minus reference (which cannot be
-          // loaned).
-          $reservable = (int)$branch_holding['total_count'] - (int) $branch_holding['reference_count'];
-          $total_reservable += $reservable;
-
-          foreach ($holding_parts as $part) {
-            if (!empty($branch_holding[$part . '_id'])) {
-              $parts[] = $org[$part][$branch_holding[$part . '_id']];
-            }
-          }
-
-          if (!empty($branch_holding['shelf_mark'])) {
-            // Shelf mark might have leading >, strip any and replace the rest
-            // with the proper arrow.
-            $parts[] = strtr(trim($branch_holding['shelf_mark'], " >\n\t"), array('>' => '→'));
-          }
-
-          $parts = array_filter($parts);
-
-          if ($parts && $branch_holding['total_count'] > $branch_holding['checked_out_count']) {
-            $holding['holdings'][] = join(' → ', $parts);
-          }
+          _alma_availability_branch_holding($branch_holding, $holding, $only_available);
         }
+        $total_reservable = $record['reservable_count'];
+        $total = $record['total_count'];
       }
 
       $holding['reservable_count'] = $total_reservable;
@@ -138,4 +80,51 @@ function alma_availability_holdings($provider_ids) {
   }
 
   return $result;
+}
+
+/**
+ * Build the location name and count the amount of materials available.
+ * Utility function to avoid code duplication.
+ *
+ * @param type $branch_holding Input Alma client holding info, will not be modified.
+ * @param type $holding Output holding info
+ * @param bool $only_available Only add to $holding if available_count > 0.
+ * @return type NULL
+ */
+function _alma_availability_branch_holding(&$branch_holding, &$holding, $only_available) {
+  if (in_array($branch_holding['collection_id'], array('karens', 'karens-'))) {
+    $holding['deferred_period'] = TRUE;
+  }
+
+  $parts = array();
+
+  if ($only_available && $branch_holding['available_count'] == 0) {
+    return;
+  }
+
+  $org = alma_get_organisation();
+  $holding_parts = variable_get('alma_availability_holding_parts', alma_availability_holding_parts());
+  foreach ($holding_parts as $part) {
+    if (!empty($branch_holding[$part . '_id'])) {
+      $parts[] = $org[$part][$branch_holding[$part . '_id']];
+    }
+  }
+
+  if (isset($holding_parts['shelf_mark']) && !empty($branch_holding['shelf_mark'])) {
+    // Shelf mark might have leading >. Trimming will make them empty strings,
+    // which will be removed by array_filter.
+    $parts = array_merge($parts, array_map("trim", explode(">", $branch_holding['shelf_mark'])));
+  }
+
+  // Remove any empty strings in parts
+  // Remove the keys to make sure it translates to an array in javascript
+  $parts = array_values(array_filter($parts));
+
+  if ($parts) {
+    $holding['holdings'][] = array(
+      'location' => $parts,
+      'total_count' => $branch_holding['total_count'],
+      'available_count' => $branch_holding['available_count'],
+    );
+  }
 }
