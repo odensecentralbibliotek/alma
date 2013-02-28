@@ -35,7 +35,7 @@ function alma_field_default_fields() {
       'module' => 'text',
       'settings' => array(
         'max_length' => '255',
-        'profile2_private' => 0,
+        'profile2_private' => 1,
       ),
       'translatable' => '0',
       'type' => 'text',
@@ -226,6 +226,7 @@ function alma_field_default_fields() {
       'module' => 'text',
       'settings' => array(
         'max_length' => '255',
+        'profile2_private' => 1,
       ),
       'translatable' => '0',
       'type' => 'text',
@@ -252,6 +253,7 @@ function alma_field_default_fields() {
         'user_register_form' => FALSE,
       ),
       'widget' => array(
+        'active' => 1,
         'module' => 'text',
         'settings' => array(
           'size' => '60',
