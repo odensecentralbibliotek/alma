@@ -723,7 +723,7 @@ class AlmaClient {
         $record['total_count'] += (int) $holding->getAttribute('nofTotal');
         if (($elem->getAttribute('showReservationButton') == 'yes') &&
             !array_key_exists($holding->getAttribute('collectionId'), $nonreservable_collections)) {
-          $record['reservable_count'] += (int) $holding->getAttribute('nofTotal') - (int) $holding->getAttribute('nofReference');
+          $record['reservable_count'] += (int) $holding->getAttribute('nofOrdered') + (int) $holding->getAttribute('nofTotal') - (int) $holding->getAttribute('nofReference');
         }
       }
       if ($record['reservable_count'] > 0) {
@@ -753,10 +753,10 @@ class AlmaClient {
               $total_count = $record['issues'][$year][$issue]['total_count'];
             }
             foreach ($issue_holdings->getElementsByTagName('holding') as $issue_holding) {
-              $total_count += (int) $issue_holding->getAttribute('nofTotal');
+              $total_count += (int) $issue_holding->getAttribute('nofTotal') + (int) $issue_holding->getAttribute('nofOrdered');
               if (($issue_holding->getAttribute('showReservationButton') == 'yes') &&
                   (!array_key_exists($issue_holding->getAttribute('collectionId'), $nonreservable_collections))) {
-                $reservable_count += (int) $issue_holding->getAttribute('nofTotal') - (int) $issue_holding->getAttribute('nofReference');
+                $reservable_count += (int) $issue_holding->getAttribute('nofOrdered') + (int) $issue_holding->getAttribute('nofTotal') - (int) $issue_holding->getAttribute('nofReference');
               }
             }
             $issue_list = array(
@@ -796,7 +796,7 @@ class AlmaClient {
         'ordered_count' => (int) $item->getAttribute('nofOrdered'),
         'checked_out_count' => (int) $item->getAttribute('nofCheckedOut'),
         'reference_count' => (int) $item->getAttribute('nofReference'),
-        'total_count' => (int) $item->getAttribute('nofTotal'),
+        'total_count' => (int) $item->getAttribute('nofTotal') + (int) $item->getAttribute('nofOrdered'),
         'collection_id' => $item->getAttribute('collectionId'),
         'sublocation_id' => $item->getAttribute('subLocationId'),
         'location_id' => $item->getAttribute('locationId'),
