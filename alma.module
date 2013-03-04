@@ -119,8 +119,16 @@ function alma_settings_form() {
     '#type' => 'textarea',
     '#title' => t('Nonreservable collections'),
     '#description' => 'Define collections that should never be reservable, every collection on its own line.',
-    '#value_callback' => '_alma_nonreservable_collections_callback',
+    '#value_callback' => '_alma_lines_to_array_callback',
     '#default_value' => variable_get('alma_availability_nonreservable_collections', ''),
+  );
+
+  $form['alma']['alma_availability']['alma_availability_nonhome_locations'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Nonhome locations'),
+    '#description' => 'These locations should always be listed having no materials home. Be aware that æ,ø,å will be ~ae,~oe,~aa.',
+    '#value_callback' => '_alma_lines_to_array_callback',
+    '#default_value' => variable_get('alma_availability_nonhome_locations', ''),
   );
 
   $form['alma']['alma_enable_logging'] = array(
@@ -136,7 +144,7 @@ function alma_settings_form() {
 /**
  * Callback for settings form item.
  */
-function _alma_nonreservable_collections_callback($element, $input = FALSE, $form_state = array()) {
+function _alma_lines_to_array_callback($element, $input = FALSE, $form_state = array()) {
   if ($input === FALSE) {
     return implode("\n", $element['#default_value']);
   }
