@@ -779,9 +779,17 @@ class AlmaClient {
    * Helper function for processing the catalogue record holdings.
    */
   private static function process_catalogue_record_holdings($elem) {
+    $nonhome_locations = variable_get('alma_availability_nonhome_locations', array());
     $holdings = array();
 
     foreach ($elem->getElementsByTagName('holding') as $item) {
+      if (in_array($item->getAttribute('locationId'), $nonhome_locations)) {
+        $nofAvailableForLoan = 0;
+      }
+      else {
+        $nofAvailableForLoan = (int) $item->getAttribute('nofAvailableForLoan');
+      }
+
       $holdings[] = array(
         'local_id' => $item->getAttribute('reservable'),
         'status' => $item->getAttribute('status'),
@@ -795,7 +803,7 @@ class AlmaClient {
         'department_id' => $item->getAttribute('departmentId'),
         'branch_id' => $item->getAttribute('branchId'),
         'organisation_id' => $item->getAttribute('organisationId'),
-        'available_count' => (int) $item->getAttribute('nofAvailableForLoan'),
+        'available_count' => $nofAvailableForLoan,
         'shelf_mark' => $item->getAttribute('shelfMark'),
         'available_from' => $item->getAttribute('firstLoanDueDate'),
       );
