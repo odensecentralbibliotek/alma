@@ -110,9 +110,17 @@ function alma_settings_form() {
   $form['alma']['alma_availability']['alma_availability_holding_parts'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Alma availability'),
-    '#description' => 'Which holding details should be used?',
+    '#description' => 'Which parts of holding details should be used?',
     '#options' => drupal_map_assoc($holding_parts),
+    '#element_validate' => array('_alma_array_filter_callback'),
     '#default_value' => variable_get('alma_availability_holding_parts', $holding_parts),
+  );
+
+  $form['alma']['alma_availability']['alma_availability_remove_duplicate'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remove shelf_mark_1 if duplicate of previous holding part'),
+    '#description' => 'The first part of shelf_mark sometimes contain the same as sublocation.',
+    '#default_value' => variable_get('alma_availability_remove_duplicate', TRUE),
   );
 
   $form['alma']['alma_availability']['alma_availability_nonreservable_collections'] = array(
@@ -144,6 +152,13 @@ function alma_settings_form() {
 /**
  * Callback for settings form item.
  */
+function _alma_array_filter_callback(&$element, &$form_state) {
+  form_set_value($element, array_filter($element['#value']), $form_state);
+}
+
+/**
+ * Callback for settings form item.
+ */
 function _alma_lines_to_array_callback($element, $input = FALSE, $form_state = array()) {
   if ($input === FALSE) {
     return implode("\n", $element['#default_value']);
@@ -152,6 +167,7 @@ function _alma_lines_to_array_callback($element, $input = FALSE, $form_state = a
     return drupal_map_assoc(explode("\n", $input));
   }
 }
+
 /**
  * Implements hook_form_FORM_ID_alter().
  * pjo notes: user_profile_form
