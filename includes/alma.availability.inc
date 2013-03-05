@@ -10,7 +10,7 @@
 function alma_availability_holding_parts() {
   static $holding_parts;
   if (!isset($holding_parts)) {
-    $holding_parts = array('branch', 'department', 'location', 'sublocation', 'collection', 'shelf_mark');
+    $holding_parts = array('branch', 'department', 'location', 'sublocation', 'collection', 'shelf_mark_1', 'shelf_mark_2');
   }
   return $holding_parts;
 }
@@ -110,10 +110,18 @@ function _alma_availability_branch_holding(&$branch_holding, &$holding, $only_av
     }
   }
 
-  if (isset($holding_parts['shelf_mark']) && !empty($branch_holding['shelf_mark'])) {
+  if ((isset($holding_parts['shelf_mark_1']) || isset($holding_parts['shelf_mark_2'])) && !empty($branch_holding['shelf_mark'])) {
     // Shelf mark might have leading >. Trimming will make them empty strings,
     // which will be removed by array_filter.
-    $parts = array_merge($parts, array_map("trim", explode(">", $branch_holding['shelf_mark'])));
+    $shelf_mark = array_map("trim", explode(">", $branch_holding['shelf_mark']));
+    if (isset($holding_parts['shelf_mark_1'])) {
+      if (!variable_get('alma_availability_remove_duplicate', TRUE) || strtolower($parts[count($parts) - 1]) != strtolower($shelf_mark[0])) {
+        $parts[] = $shelf_mark[0];
+      }
+    }
+    if (isset($holding_parts['shelf_mark_2'])) {
+      $parts[] = $shelf_mark[1];
+    }
   }
 
   // Remove any empty strings in parts
