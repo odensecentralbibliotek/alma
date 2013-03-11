@@ -123,6 +123,13 @@ function alma_settings_form() {
     '#default_value' => variable_get('alma_availability_remove_duplicate', TRUE),
   );
 
+  $form['alma']['alma_availability']['alma_availability_remove_all_caps'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remove shelf_mark_1 if it consist of only upper case characters.'),
+    '#description' => t('This fixes some problems that have been seen for music materials.'),
+    '#default_value' => variable_get('alma_availability_remove_all_caps', FALSE),
+  );
+
   $form['alma']['alma_availability']['alma_availability_nonreservable_collections'] = array(
     '#type' => 'textarea',
     '#title' => t('Nonreservable collections'),

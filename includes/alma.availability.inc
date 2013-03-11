@@ -115,8 +115,12 @@ function _alma_availability_branch_holding(&$branch_holding, &$holding, $only_av
     // which will be removed by array_filter.
     $shelf_mark = array_map("trim", explode(">", $branch_holding['shelf_mark']));
     if (isset($holding_parts['shelf_mark_1'])) {
+      // If enabled, don't show shelf_mark_1 if equal to previous part.
       if (!variable_get('alma_availability_remove_duplicate', TRUE) || strtolower($parts[count($parts) - 1]) != strtolower($shelf_mark[0])) {
-        $parts[] = $shelf_mark[0];
+        // If enabled, don't show shelf_mark_1 if it consist of only upper case characters.
+        if (!variable_get('alma_availability_remove_all_caps', FALSE) || !ctype_upper($shelf_mark[0])) {
+          $parts[] = $shelf_mark[0];
+        }
       }
     }
     if (isset($holding_parts['shelf_mark_2'])) {
