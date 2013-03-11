@@ -104,13 +104,17 @@ function alma_settings_form() {
     '#default_value' => variable_get('alma_base_url', ''),
   );
 
+  $form['alma']['alma_availability'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Alma availability'),
+  );
   $path = drupal_get_path('module', 'alma');
   require_once $path . '/includes/alma.availability.inc';
   $holding_parts = alma_availability_holding_parts();
   $form['alma']['alma_availability']['alma_availability_holding_parts'] = array(
     '#type' => 'checkboxes',
-    '#title' => t('Alma availability'),
-    '#description' => 'Which parts of holding details should be used?',
+    '#title' => t('Holding parts'),
+    '#description' => t('Which parts of holding details should be used?'),
     '#options' => drupal_map_assoc($holding_parts),
     '#element_validate' => array('_alma_array_filter_callback'),
     '#default_value' => variable_get('alma_availability_holding_parts', $holding_parts),
@@ -119,7 +123,7 @@ function alma_settings_form() {
   $form['alma']['alma_availability']['alma_availability_remove_duplicate'] = array(
     '#type' => 'checkbox',
     '#title' => t('Remove shelf_mark_1 if duplicate of previous holding part'),
-    '#description' => 'The first part of shelf_mark sometimes contain the same as sublocation.',
+    '#description' => t('The first part of shelf_mark sometimes contain the same as sublocation.'),
     '#default_value' => variable_get('alma_availability_remove_duplicate', TRUE),
   );
 
@@ -133,7 +137,7 @@ function alma_settings_form() {
   $form['alma']['alma_availability']['alma_availability_nonreservable_collections'] = array(
     '#type' => 'textarea',
     '#title' => t('Nonreservable collections'),
-    '#description' => 'Define collections that should never be reservable, every collection on its own line.',
+    '#description' => t('Define collections that should never be reservable, every collection on its own line.'),
     '#value_callback' => '_alma_lines_to_array_callback',
     '#default_value' => variable_get('alma_availability_nonreservable_collections', ''),
   );
@@ -141,7 +145,7 @@ function alma_settings_form() {
   $form['alma']['alma_availability']['alma_availability_nonhome_locations'] = array(
     '#type' => 'textarea',
     '#title' => t('Nonhome locations'),
-    '#description' => 'These locations should always be listed having no materials home. Be aware that æ,ø,å will be ~ae,~oe,~aa.',
+    '#description' => t('These locations should always be listed having no materials home. Be aware that æ,ø,å will be ~ae,~oe,~aa.'),
     '#value_callback' => '_alma_lines_to_array_callback',
     '#default_value' => variable_get('alma_availability_nonhome_locations', ''),
   );
