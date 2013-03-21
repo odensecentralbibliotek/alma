@@ -139,7 +139,7 @@ function alma_settings_form() {
     '#title' => t('Nonreservable collections'),
     '#description' => t('Define collections that should never be reservable, every collection on its own line.'),
     '#value_callback' => '_alma_lines_to_array_callback',
-    '#default_value' => variable_get('alma_availability_nonreservable_collections', ''),
+    '#default_value' => variable_get('alma_availability_nonreservable_collections', array()),
   );
 
   $form['alma']['alma_availability']['alma_availability_nonhome_locations'] = array(
@@ -147,7 +147,7 @@ function alma_settings_form() {
     '#title' => t('Nonhome locations'),
     '#description' => t('These locations should always be listed having no materials home. Be aware that æ,ø,å will be ~ae,~oe,~aa.'),
     '#value_callback' => '_alma_lines_to_array_callback',
-    '#default_value' => variable_get('alma_availability_nonhome_locations', ''),
+    '#default_value' => variable_get('alma_availability_nonhome_locations', array()),
   );
 
   $form['alma']['alma_enable_logging'] = array(
