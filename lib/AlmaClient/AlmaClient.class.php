@@ -133,7 +133,7 @@ class AlmaClient {
    */
   public function get_organisation_hierarchy() {
     $hierarchy = array();
-    $doc = $this->request('alma/organisation/hierarchy');
+    $doc = $this->request('organisation/hierarchy');
 
     foreach ($doc->getElementsByTagName('branch') as $branch) {
       $branch_id = $branch->getAttribute('id');
