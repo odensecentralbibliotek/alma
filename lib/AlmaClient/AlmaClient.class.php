@@ -127,6 +127,24 @@ class AlmaClient {
   }
 
   /**
+   * Get organisation hierarchy from Alma.
+   *
+   * @return array
+   */
+  public function get_organisation_hierarchy() {
+    $hierarchy = array();
+    $doc = $this->request('alma/organisation/hierarchy');
+
+    foreach ($doc->getElementsByTagName('branch') as $branch) {
+      $branch_id = $branch->getAttribute('id');
+      $hierarchy[$branch_id] = array();
+      foreach ($branch->getElementsByTagName('department') as $department) {
+        $hierarchy[$branch_id][] = $department->getAttribute('id');
+      }
+    }
+    return $hierarchy;
+  }
+  /**
    * Get branch names from Alma.
    *
    * Formats the list of branches in an array usable for form API selects.
