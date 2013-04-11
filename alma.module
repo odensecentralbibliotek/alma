@@ -260,6 +260,17 @@ function alma_client_invoke($method) {
 }
 
 /**
+ * Get the organisation hierarchy info from Alma.
+ *
+ * includes branches and departments.
+ *
+ * @return array
+ */
+function alma_get_organisation_hierarchy() {
+  return alma_client_invoke('get_organisation_hierarchy');
+}
+
+/**
  * Get the complete organisation info from Alma.
  *
  * Includes branches, departments, locations, sublocations and collections. The
