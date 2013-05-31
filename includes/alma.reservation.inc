@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @todo
  * Where do the user enter the interest periode and preferred branch
@@ -7,31 +6,31 @@
  */
 
 
-
+/**
+ * Creates form with which can be used during reservation to select preferred
+ * branch and interest period.
+ *
+ * @param type $type
+ * @param type $account
+ * @param type $reservables
+ * @return type
+ */
 function alma_reservation_options($type, $account, $reservables) {
-  /*
-   * While we use ding_reservation for branch handling, we don't want to
-   * depend on the module, as it would mean that ding_reservation can't be
-   * disabled. So instead we throw an exception here.
-   */
+  $branches = alma_reservation_pickup_branches($account);
 
-  if (!module_exists('ding_reservation')) {
-    throw new Exception('Alma reservation options requires ding_reservation.');
+  $preferred_branch = NULL;
+  if (ding_user_is_provider_user($account)) {
+    // Load profile2 profile.
+  $profile = ding_user_provider_profile($account);
+
+    // Use a metadata wrapper to access the data.
+    $wrapper = entity_metadata_wrapper('profile2', $profile);
+
+    // Get values.
+    $preferred_branch = $wrapper->field_alma_preferred_branch->value();
   }
 
   $form = array();
-  $profile = ding_user_provider_profile($account);
-
-  $branches =  alma_reservation_pickup_branches($account);
-  // @todo; use local branches from issue - some migth not be available in all branches
-
-  if (ding_user_is_provider_user($account)) {
-    $preferred_branch = $profile->field_alma_preferred_branch[field_language('profile2', $profile, 'field_alma_preferred_branch')][0]['value'];
-  }
-  else {
-    $preferred_branch = NULL;
-  }
-
   $form += ding_reservation_default_options_branch($type, 'alma_preferred_branch', $preferred_branch, $branches);
 
   return $form;
