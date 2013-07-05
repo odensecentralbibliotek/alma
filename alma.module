@@ -374,14 +374,6 @@ function alma_set_profile2_fields($account) {
     return;
   }
 
-  // Wrapper for profile2-fields.
-  $account->content['profile2'] = array(
-      '#type' => 'item',
-      '#title' => t('My library'),
-      '#prefix' => '<div class="profile2_provider_fields">',
-      '#suffix' => '</div>',
-    );
-
   // Set preferred branch.
   if ($pref_branch = alma_get_preferred_branch($profile2)) {
     $account->content['profile2']['preferred_branch'] = array(
