@@ -59,3 +59,37 @@ function alma_loan_renew($account, $ids) {
   }
   return $result;
 }
+
+/**********************************
+ * Helper functions
+ */
+
+function alma_loan_get_loans($account, $reset = FALSE) {
+  $creds = ding_user_get_creds($account);
+
+  // Try to look in the session for loan information.
+  if (!isset($_SESSION['alma_loans']) || !is_array($_SESSION['alma_loans']) || $reset) {
+    $_SESSION['alma_loans'] = alma_client_invoke('get_loans', $creds['name'], $creds['pass']);
+  }
+
+  return $_SESSION['alma_loans'];
+}
+
+function alma_loan_clear_cache() {
+  unset($_SESSION['alma_loans']);
+}
+
+function alma_loan_exists($account, $item_id) {
+  $loans = alma_loan_get_loans( $account );
+  foreach ($loans as $res) {
+    if ($res['record_id'] == $item_id) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+}
+
+function alma_loan_format_date($datetime) {
+  $timestamp = (!is_int($datetime)) ? strtotime($datetime) : $datetime;
+  return date('Y-m-d', $timestamp);
+}
