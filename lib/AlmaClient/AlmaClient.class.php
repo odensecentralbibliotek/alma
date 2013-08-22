@@ -793,6 +793,7 @@ class AlmaClient {
       $data[$record->getAttribute('id')] = array(
         'reservable' => ($record->getAttribute('isReservable') == 'yes') ? TRUE : FALSE,
         'available' => ($record->getAttribute('isAvailable') == 'yes') ? TRUE : FALSE,
+        'is_internet' => ($record->getAttribute('availabilityInformation') == 'internetAccessible') ? TRUE : FALSE,
       );
     }
     return $data;
