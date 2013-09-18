@@ -132,6 +132,9 @@ function alma_user_account_update($account, $changes) {
     elseif (isset($account->mail) && !empty($changes['mail'])) {
       $res = alma_client_invoke('change_email_address', $creds['name'], $creds['pass'], $account->mail, $changes['mail']);
     }
+    elseif (isset($account->mail) && empty($changes['mail'])) {
+      $res = alma_client_invoke('remove_email_address', $creds['name'], $creds['pass'], $account->mail);
+    }
   }
 
   // Change password.
