@@ -759,7 +759,7 @@ class AlmaClient {
               $total_count += (int) $issue_holding->getAttribute('nofTotal') + (int) $issue_holding->getAttribute('nofOrdered');
               if (($issue_holding->getAttribute('showReservationButton') == 'yes') &&
                   (!array_key_exists($issue_holding->getAttribute('collectionId'), $nonreservable_collections))) {
-                $reservable_count += (int) $issue_holding->getAttribute('nofOrdered') + (int) $issue_holding->getAttribute('nofTotal') - (int) $issue_holding->getAttribute('nofReference');
+                $reservable_count += (int) $issue_holding->getAttribute('nofOrdered') + (int) $issue_holding->getAttribute('nofTotal');
               }
             }
             $issue_list = array(
