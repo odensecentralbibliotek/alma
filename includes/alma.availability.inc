@@ -57,7 +57,7 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
           foreach ($issues as $issue_no => $holds) {
             $issue_holding['holdings'] = array();
             foreach ($holds as $key => $branch_holding) {
-              _alma_availability_branch_holding($branch_holding, $issue_holding, $only_available);
+              _alma_availability_branch_holding($branch_holding, $issue_holding, $only_available, $record['category']);
             }
             $holding['issues'][$volume][$issue_no] = array_merge($holding['issues'][$volume][$issue_no], $issue_holding);
             $total_reservable += $holding['issues'][$volume][$issue_no]['reservable_count'];
@@ -67,7 +67,7 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
       } // END periodicals
       else {
         foreach ($record['holdings'] as $branch_holding) {
-          _alma_availability_branch_holding($branch_holding, $holding, $only_available);
+          _alma_availability_branch_holding($branch_holding, $holding, $only_available, $record['category']);
         }
         $total_reservable = $record['reservable_count'];
         $total = $record['total_count'];
@@ -91,7 +91,7 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
  * @param bool $only_available Only add to $holding if available_count > 0.
  * @return type NULL
  */
-function _alma_availability_branch_holding(&$branch_holding, &$holding, $only_available) {
+function _alma_availability_branch_holding(&$branch_holding, &$holding, $only_available, $category) {
   if (in_array($branch_holding['collection_id'], array('karens', 'karens-'))) {
     $holding['deferred_period'] = TRUE;
   }
@@ -117,8 +117,8 @@ function _alma_availability_branch_holding(&$branch_holding, &$holding, $only_av
     if (isset($holding_parts['shelf_mark_1'])) {
       // If enabled, don't show shelf_mark_1 if equal to previous part.
       if (!variable_get('alma_availability_remove_duplicate', TRUE) || strtolower($parts[count($parts) - 1]) != strtolower($shelf_mark[0])) {
-        // If enabled, don't show shelf_mark_1 if it consist of only upper case characters.
-        if (!variable_get('alma_availability_remove_all_caps', FALSE) || !ctype_upper($shelf_mark[0])) {
+        // If enabled, don't show shelf_mark_1 for music.
+        if (!variable_get('alma_availability_remove_music_shelfmark1', FALSE) || $category != 'music') {
           $parts[] = $shelf_mark[0];
         }
       }
