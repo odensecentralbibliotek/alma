@@ -12,27 +12,29 @@
  *
  */
 function alma_loan_list($account) {
-  $creds = ding_user_get_creds($account);
-  $results = array();
+  $results = &drupal_static(__FUNCTION__);
+  if (!isset($results)) {
+    $creds = ding_user_get_creds($account);
+    $results = array();
 
-  try {
-    // Get all loans form alma for the user account given.
-    $loans =  alma_client_invoke('get_loans', $creds['name'], $creds['pass']);
-  } catch (Exception $e) {
-    throw new DingProviderLoanUserError($e->getMessage());
+    try {
+      // Get all loans form alma for the user account given. 
+      $loans =  alma_client_invoke('get_loans', $creds['name'], $creds['pass']);
+    } catch (Exception $e) {
+      throw new DingProviderLoanUserError($e->getMessage());
+    }
+
+    foreach ($loans as $loan) {
+      $results[$loan['id']] = new DingProviderLoan($loan['id'], array(
+        'ding_entity_id' => variable_get('ting_agency', '') . ':' . $loan['record_id'],
+        'loan_date' => $loan['loan_date'],
+        'expiry' => $loan['due_date'],
+        'renewable' => $loan['is_renewable'],
+        'materials_number' => $loan['id'],
+        'notes' => isset($loan['notes']) ? $loan['notes'] : DingEntityBase::NULL,
+      ));
+    }
   }
-
-  foreach ($loans as $loan) {
-    $results[$loan['id']] = new DingProviderLoan($loan['id'], array(
-      'ding_entity_id' => variable_get('ting_agency', '') . ':' . $loan['record_id'],
-      'loan_date' => $loan['loan_date'],
-      'expiry' => $loan['due_date'],
-      'renewable' => $loan['is_renewable'],
-      'materials_number' => $loan['id'],
-      'notes' => isset($loan['notes']) ? $loan['notes'] : DingEntityBase::NULL,
-    ));
-  }
-
   return $results;
 }
 
