@@ -89,7 +89,8 @@ function alma_reservation_list($account) {
     if (isset($reservation['pickup_number'])) {
       $result[$reservation['id']] = new DingProviderReservation($reservation['id'], array(
         'order_id' => $reservation['id'],
-        'ding_entity_id' => variable_get('ting_agency', '') . ':' . $reservation['record_id'],
+        //'ding_entity_id' => variable_get('ting_agency', '') . ':' . $reservation['record_id'],
+        'ding_entity_id' => ding_provider_build_entity_id($reservation['record_id']),
         'pickup_branch_id' => $reservation['pickup_branch'],
         'pickup_order_id' => $reservation['pickup_number'],
         'pickup_date' => $reservation['pickup_expire_date'],
@@ -102,7 +103,8 @@ function alma_reservation_list($account) {
     else {
       $result[$reservation['id']] = new DingProviderReservation($reservation['id'], array(
         'order_id' => $reservation['id'],
-        'ding_entity_id' => variable_get('ting_agency', '') . ':' . $reservation['record_id'],
+        //'ding_entity_id' => variable_get('ting_agency', '') . ':' . $reservation['record_id'],
+        'ding_entity_id' => ding_provider_build_entity_id($reservation['record_id']),
         'pickup_branch_id' => $reservation['pickup_branch'],
         'created' => $reservation['create_date'],
         'expiry' => $reservation['valid_to'],
