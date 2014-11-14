@@ -136,6 +136,7 @@ function _alma_availability_branch_holding(&$branch_holding, &$holding, $only_av
     $holding['holdings'][] = array(
       'location' => $parts,
       'total_count' => $branch_holding['total_count'],
+      'ordered_count' => $branch_holding['ordered_count'],
       'available_count' => $branch_holding['available_count'],
       'on_way' => $branch_holding['status'] == 'inAcquisition',
     );
