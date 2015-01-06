@@ -48,7 +48,7 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
         'is_internet' => ($record['media_class'] == 'internet'),
       );
       foreach ($record['holdings'] as $available_from) {
-         $holding['available_from'] = $available_from['available_from'];
+         $holding['available_from'] = isset($available_from['available_from']) ? $available_from['available_from'] : "";         
       }
 
       $total = $total_reservable = 0;
