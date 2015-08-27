@@ -154,6 +154,14 @@ function alma_settings_form() {
     '#default_value' => variable_get('alma_availability_nonhome_locations', array()),
   );
 
+  $form['alma']['alma_availability']['alma_availability_nonhome_departments'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Nonhome departments'),
+    '#description' => t('These departments should always be listed having no materials home. Be aware that æ,ø,å will be ~ae,~oe,~aa.'),
+    '#value_callback' => '_alma_lines_to_array_callback',
+    '#default_value' => variable_get('alma_availability_nonhome_departments', array()),
+  );
+  
   $form['alma']['alma_enable_logging'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable logging'),

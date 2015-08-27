@@ -791,6 +791,7 @@ class AlmaClient {
    */
   private static function process_catalogue_record_holdings($elem) {
     $nonhome_locations = variable_get('alma_availability_nonhome_locations', array());
+    $nonhome_departments = variable_get('alma_availability_nonhome_departments', array());
     $holdings = array();
 
     foreach ($elem->getElementsByTagName('holding') as $item) {
@@ -800,7 +801,7 @@ class AlmaClient {
       else {
         $nofAvailableForLoan = (int) $item->getAttribute('nofAvailableForLoan');
       }
-
+      
       $holdings[] = array(
         'local_id' => $item->getAttribute('reservable'),
         'status' => $item->getAttribute('status'),
@@ -818,8 +819,14 @@ class AlmaClient {
         'shelf_mark' => $item->getAttribute('shelfMark'),
         'available_from' => $item->getAttribute('firstLoanDueDate'),
       );
+          
+      foreach ($holdings as $index => $holding) {
+        if (in_array($holding['department_id'], $nonhome_departments)) {
+          unset($holdings[$index]);
+        }
+      }
     }
-
+    
     return $holdings;
   }
 
