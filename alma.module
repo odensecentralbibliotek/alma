@@ -479,7 +479,8 @@ function alma_get_interest_period($profile2) {
   $interest_period = FALSE;
   $int_values = isset( $field_info['settings']['allowed_values'] ) ?  $field_info['settings']['allowed_values']: FALSE;
   if ($int_values) {
-    $int_period = $profile2->field_alma_interest_period[$langs['field_alma_interest_period']][0]['value'];
+    //$int_period = $profile2->field_alma_interest_period[$langs['field_alma_interest_period']][0]['value'];
+    $int_period = 240; //period is always 8 months..
     $interest_period = isset($int_values[$int_period]) ? array('key' => $int_period, 'value' => $int_values[$int_period]) : FALSE;
   }
   return $interest_period;
