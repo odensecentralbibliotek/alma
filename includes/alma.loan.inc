@@ -52,6 +52,9 @@ function alma_loan_renew($account, $ids) {
     if (isset($res[$id]) && $res[$id] === TRUE) {
       $result[$id] = DingProviderLoan::STATUS_RENEWED;
     }
+    elseif(isset($res[$id]) && $res[$id] === DingProviderLoan::STATUS_INT_LOAN){
+        $result[$id] = DingProviderLoan::STATUS_INT_LOAN;
+    }
     else {
       /**
        * @todo there are message saying why, the renew failed.

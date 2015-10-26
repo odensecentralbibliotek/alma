@@ -533,6 +533,11 @@ class AlmaClient {
     $reservations = array();
     foreach ($doc->getElementsByTagName('loan') as $loan) {
       $id = $loan->getAttribute('id');
+      $renewalStatus = "";
+      if($loan->hasAttribute('renewalStatus'))
+      {
+          $renewalStatus = $loan->getAttribute('renewalStatus');
+      }
       if (in_array($id, $loan_ids)) {
         if ($renewable = $loan->getElementsByTagName('loanIsRenewable')->item(0)) {
           $message = $renewable->getAttribute('message');
@@ -549,13 +554,16 @@ class AlmaClient {
           elseif ($message == 'copyIsReserved') {
             $reservations[$id] = t('The material is reserved by another loaner');
           }
+          elseif($renewalStatus == "copyHasSpecialCircCat")
+          {
+              $reservations[$id] = DingProviderLoan::STATUS_INT_LOAN; // fornyet med forbehold!.
+          }
           else {
             $reservations[$id] = t('Unable to renew material');
           }
         }
       }
     }
-
     return $reservations;
   }
 
