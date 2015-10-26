@@ -1032,7 +1032,7 @@ class AlmaClient {
     * @throws \AlmaClientHTTPError
     * @throws \AlmaClientReservationNotFound
     */
-   public function self_register($cpr, $pin_code, $name, $mail, $branch) {
+   public function self_register($cpr, $pin_code, $name, $mail, $branch, $sms) {
      $params = array(
        'securityNumber' => $cpr,
        'borrCard' => $cpr,
@@ -1041,6 +1041,7 @@ class AlmaClient {
        'email' => $mail,
        'branch' => $branch,
        'addr1' => '+++',
+       'sms' => $sms,
        'verified' => FALSE,
        'locale' => 'da_DK'
      );
