@@ -81,7 +81,7 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
       $result[$alma_id] = $holding;
     }
   }
-
+  watchdog('availability Log:',json_encode($result), array(), WATCHDOG_NOTICE, $link = NULL);
   return $result;
 }
 
