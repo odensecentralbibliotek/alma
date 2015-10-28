@@ -773,11 +773,19 @@ class AlmaClient {
             }
             foreach ($issue_holdings->getElementsByTagName('holding') as $issue_holding) {
               $total_count += (int) $issue_holding->getAttribute('nofTotal') + (int) $issue_holding->getAttribute('nofOrdered');
-              if (($issue_holding->getAttribute('showReservationButton') == 'yes') &&
-                  (!array_key_exists($issue_holding->getAttribute('collectionId'), $nonreservable_collections))) {
-                $reservable_count += (int) $issue_holding->getAttribute('nofOrdered') + (int) $issue_holding->getAttribute('nofTotal');
+              if ($issue_holding->getAttribute('showReservationButton') == 'yes') {
+                    $collectionId = $issue_holding->hasAttribute ('collectionId') ?  $issue_holding->getAttribute('collectionId') : "";
+                    if($collectionId != null && $collectionId != "" && array_key_exists($collectionId, $nonreservable_collections))
+                    {
+                        //collection is not reserveable.
+                        //watchdog('issue_holding', 'Test or unreserveable collection hit.', array(), WATCHDOG_NOTICE, $link = NULL);
+                    }
+                    else
+                    {
+                        $reservable_count += (int) $issue_holding->getAttribute('nofOrdered') + (int) $issue_holding->getAttribute('nofTotal');
+                    }
+                }
               }
-            }
             $issue_list = array(
               'local_id' => $holdings[0]['local_id'],
               'reservable_count' => $reservable_count,
@@ -790,7 +798,7 @@ class AlmaClient {
         }
       }
     }
-
+    
     return $record;
   }
 
