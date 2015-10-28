@@ -737,9 +737,16 @@ class AlmaClient {
       $record['total_count'] = 0;
       foreach ($elem->getElementsByTagName('holding') as $holding) {
         $record['total_count'] += (int) $holding->getAttribute('nofTotal');
-        if (($elem->getAttribute('showReservationButton') == 'yes') &&
-            !array_key_exists($holding->getAttribute('collectionId'), $nonreservable_collections)) {
-          $record['reservable_count'] += (int) $holding->getAttribute('nofOrdered') + (int) $holding->getAttribute('nofTotal') - (int) $holding->getAttribute('nofReference');
+        if ($elem->getAttribute('showReservationButton') == 'yes') {
+            $collectionId = $holding->hasAttribute ('collectionId') ?  $holding->getAttribute('collectionId') : "";
+            if($collectionId != null &&  $collectionId != "" && array_key_exists($collectionId, $nonreservable_collections))
+            {
+                //do nothing.
+            }
+            else
+            {
+                $record['reservable_count'] += (int) $holding->getAttribute('nofOrdered') + (int) $holding->getAttribute('nofTotal') - (int) $holding->getAttribute('nofReference');
+            }
         }
       }
       if ($record['reservable_count'] > 0) {
