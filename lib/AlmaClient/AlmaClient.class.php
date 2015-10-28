@@ -774,10 +774,11 @@ class AlmaClient {
             foreach ($issue_holdings->getElementsByTagName('holding') as $issue_holding) {
               $total_count += (int) $issue_holding->getAttribute('nofTotal') + (int) $issue_holding->getAttribute('nofOrdered');
               if ($issue_holding->getAttribute('showReservationButton') == 'yes') {
-                    $test = $issue_holding->hasAttribute ('collectionId') ?  $issue_holding->getAttribute('collectionId') : "";
-                    if($test != null && $test != "" && array_key_exists($test, $nonreservable_collections))
+                    $collectionId = $issue_holding->hasAttribute ('collectionId') ?  $issue_holding->getAttribute('collectionId') : "";
+                    if($collectionId != null && $collectionId != "" && array_key_exists($collectionId, $nonreservable_collections))
                     {
-                        watchdog('issue_holding', 'Test or unreserveable collection hit.', array(), WATCHDOG_NOTICE, $link = NULL);
+                        //collection is not reserveable.
+                        //watchdog('issue_holding', 'Test or unreserveable collection hit.', array(), WATCHDOG_NOTICE, $link = NULL);
                     }
                     else
                     {
