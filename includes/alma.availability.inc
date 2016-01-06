@@ -34,9 +34,11 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
   $ids = join(',', $provider_ids);
 
   $details = alma_client_invoke('catalogue_record_detail', $ids);
+  
   $result = array();
   if ($details && isset($details['records'])) {
     foreach ($details['records'] as $alma_id => $record) {
+     
       $holding = array(
         'local_id' => $alma_id,
         'title' => $record['titles'][0],
@@ -52,21 +54,26 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
       }
 
       $total = $total_reservable = 0;
-
+      
       // START periodicals
       if ($holding['is_periodical']) {
-        $holding['issues'] = $record['issues'];
-        foreach ($record['holdings'] as $volume => $issues) {
-          foreach ($issues as $issue_no => $holds) {
-            $issue_holding['holdings'] = array();
-            foreach ($holds as $key => $branch_holding) {
-              _alma_availability_branch_holding($branch_holding, $issue_holding, $only_available, $record['category']);
+          if(isset($record['issues']))
+          {
+            $holding['issues'] = $record['issues'];
+            foreach ($record['holdings'] as $volume => $issues) {
+
+              foreach ($issues as $issue_no => $holds) {
+                $issue_holding['holdings'] = array();
+                foreach ($holds as $key => $branch_holding) {
+                  _alma_availability_branch_holding($branch_holding, $issue_holding, $only_available, $record['category']);
+                }
+                $holding['issues'][$volume][$issue_no] = array_merge($holding['issues'][$volume][$issue_no], $issue_holding);
+                $total_reservable += $holding['issues'][$volume][$issue_no]['reservable_count'];
+                $total += $holding['issues'][$volume][$issue_no]['total_count'];
+
+              }
             }
-            $holding['issues'][$volume][$issue_no] = array_merge($holding['issues'][$volume][$issue_no], $issue_holding);
-            $total_reservable += $holding['issues'][$volume][$issue_no]['reservable_count'];
-            $total += $holding['issues'][$volume][$issue_no]['total_count'];
           }
-        }
       } // END periodicals
       else {
         foreach ($record['holdings'] as $branch_holding) {
@@ -81,7 +88,7 @@ function alma_availability_holdings($provider_ids, $only_available = TRUE) {
       $result[$alma_id] = $holding;
     }
   }
-  watchdog('availability Log:',json_encode($result), array(), WATCHDOG_NOTICE, $link = NULL);
+  
   return $result;
 }
 
