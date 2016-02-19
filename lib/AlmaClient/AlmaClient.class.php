@@ -1047,18 +1047,19 @@ class AlmaClient {
     * @throws \AlmaClientHTTPError
     * @throws \AlmaClientReservationNotFound
     */
-   public function self_register($cpr, $pin_code, $name, $mail, $branch, $sms) {
-     $params = array(
+   public function self_register($cpr, $pin_code, $name, $addr1, $addr2, $mail, $branch, $sms) {
+    $params = array(
        'securityNumber' => $cpr,
        'borrCard' => $cpr,
        'pin' => $pin_code,
        'name' => $name,
        'email' => $mail,
        'branch' => $branch,
-       'addr1' => '+++',
+       'addr1' => $addr1,
+       'addr2' => $addr2,
        'sms' => $sms,
-       'verified' => FALSE,
-       'locale' => 'da_DK'
+      'verified' => FALSE,
+      'locale' => 'da_DK'
      );
           
      return $this->request('patron/selfReg', $params);;
