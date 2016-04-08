@@ -89,7 +89,7 @@ class AlmaClient {
             break;
           case 'reservationNotFound':
             throw new AlmaClientReservationNotFound('Reservation not found');
-            
+
              case 'invalidPatron':
              if ($method == 'patron/selfReg') {
                throw new AlmaClientUserAlreadyExistsError();
@@ -664,6 +664,19 @@ class AlmaClient {
   }
 
   /**
+   * Change patron category.
+   */
+  public function change_patron_category($borr_card, $pin_code, $patronCategory) {
+    $params = array(
+      'borrCard' => $borr_card,
+      'pinCode' => $pin_code,
+      'patronCategory' => $patronCategory,
+    );
+    $doc = $this->request('patron/category/change', $params);
+    return TRUE;
+  }
+
+  /**
    * Get details about one or more catalogue record.
    */
   public function catalogue_record_detail($alma_ids) {
@@ -805,7 +818,7 @@ class AlmaClient {
         }
       }
     }
-    
+
     return $record;
   }
 
@@ -824,7 +837,7 @@ class AlmaClient {
       else {
         $nofAvailableForLoan = (int) $item->getAttribute('nofAvailableForLoan');
       }
-      
+
       $holdings[] = array(
         'local_id' => $item->getAttribute('reservable'),
         'status' => $item->getAttribute('status'),
@@ -842,14 +855,14 @@ class AlmaClient {
         'shelf_mark' => $item->getAttribute('shelfMark'),
         'available_from' => $item->getAttribute('firstLoanDueDate'),
       );
-          
+
       foreach ($holdings as $index => $holding) {
         if (in_array($holding['department_id'], $nonhome_departments)) {
           unset($holdings[$index]);
         }
       }
     }
-    
+
     return $holdings;
   }
 
@@ -952,7 +965,7 @@ class AlmaClient {
       'pinCode' => $pin_code,
       'absentId' => $absent_id,
       'absentFrom' => date_format(date_create($from_date), 'Y-m-d'),
-      'absentTo' => date_format(date_create($to_date), 'Y-m-d'), 
+      'absentTo' => date_format(date_create($to_date), 'Y-m-d'),
     );
 
     $doc = $this->request('patron/absent/change', $params);
@@ -1030,7 +1043,7 @@ class AlmaClient {
     $doc = $this->request('patron/messageServices/remove', $params);
     return TRUE;
    }
- 
+
 
  /**
     * Create new user af alma.
@@ -1061,10 +1074,10 @@ class AlmaClient {
       'verified' => FALSE,
       'locale' => 'da_DK'
      );
-          
+
      return $this->request('patron/selfReg', $params);;
    }
-           
+
  }
 /**
  * Define exceptions for different error conditions inside the Alma client.
